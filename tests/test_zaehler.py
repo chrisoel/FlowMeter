@@ -24,7 +24,7 @@ def test_zaehlerstand_erfassen(clean_test_datei):
     assert gas.stand == 12345.678, "Der Zählerstand für Gas sollte 12345.678 sein."
 
 def test_zaehlerstand_ist_float(clean_test_datei):
-    # User Stories: US1_Strom_erfassen, US2_Gas_erfassen
+    # User Stories: US1_Strom_erfassen, US2_Gas_erfassen, US5_Zählerstandseingabe_validieren
 
     # Test für Stromzähler
     strom = Stromzaehler(clean_test_datei)
@@ -37,7 +37,7 @@ def test_zaehlerstand_ist_float(clean_test_datei):
     assert isinstance(gas.stand, float), "Der Zählerstand für Gas sollte ein Float sein."
 
 def test_zaehlerstand_negativ_nicht_erlaubt(clean_test_datei):
-    # User Stories: US1_Strom_erfassen, US2_Gas_erfassen
+    # User Stories: US1_Strom_erfassen, US2_Gas_erfassen, US5_Zählerstandseingabe_validieren
 
     # Test für Stromzähler
     strom = Stromzaehler(clean_test_datei)
@@ -50,7 +50,7 @@ def test_zaehlerstand_negativ_nicht_erlaubt(clean_test_datei):
         gas.erfasse_zaehlerstand(-12345.678)
 
 def test_zaehlerstand_validierung(clean_test_datei):
-    # User Stories: US1_Strom_erfassen, US2_Gas_erfassen
+    # User Stories: US1_Strom_erfassen, US2_Gas_erfassen, US5_Zählerstandseingabe_validieren
 
     # Test für Stromzähler (7 Stellen, 1 Nachkommastelle)
     strom = Stromzaehler(clean_test_datei)

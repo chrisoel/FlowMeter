@@ -7,6 +7,7 @@ class BasisZaehler:
     - US2_Gas_erfassen
     - US3_Stromzählernummer
     - US4_Gaszählernummer
+    - US5_Zählerstandseingabe_validieren
     """
 
     def __init__(self, zaehlerstand_text_pfad, zaehlernummer, dezimalstellen, gesamtlänge):
@@ -23,6 +24,7 @@ class BasisZaehler:
         Unterstützte User Stories:
         - US1_Strom_erfassen
         - US2_Gas_erfassen
+        - US5_Zählerstandseingabe_validieren
         """
         if isinstance(stand, int):
             stand = float(stand)
@@ -45,6 +47,7 @@ class BasisZaehler:
         Unterstützte User Stories:
         - US1_Strom_erfassen
         - US2_Gas_erfassen
+        - US5_Zählerstandseingabe_validieren
         """
         stand_str = f"{stand:.{self.dezimalstellen}f}"
         if '.' not in stand_str:
@@ -77,6 +80,7 @@ class Stromzaehler(BasisZaehler):
     Unterstützte User Stories:
     - US1_Strom_erfassen
     - US3_Stromzählernummer
+    - US5_Zählerstandseingabe_validieren
     """
     def __init__(self, zaehlerstand_text_pfad="data/stromzaehler.txt", zaehlernummer="D3-XX XXXXX"):
         super().__init__(zaehlerstand_text_pfad, zaehlernummer, dezimalstellen=1, gesamtlänge=7)
@@ -88,6 +92,7 @@ class Gaszaehler(BasisZaehler):
     Unterstützte User Stories:
     - US2_Gas_erfassen
     - US4_Gaszählernummer
+    - US5_Zählerstandseingabe_validieren
     """
     def __init__(self, zaehlerstand_text_pfad="data/gaszaehler.txt", zaehlernummer="X XXXXX XXXX XXXX"):
         super().__init__(zaehlerstand_text_pfad, zaehlernummer, dezimalstellen=3, gesamtlänge=8)
