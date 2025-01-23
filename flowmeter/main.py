@@ -1,3 +1,5 @@
+from datetime import datetime
+
 class BasisZaehler:
     """
     Basisklasse zur Verwaltung von Zählerständen.
@@ -8,6 +10,7 @@ class BasisZaehler:
     - US3_Stromzählernummer
     - US4_Gaszählernummer
     - US5_Zählerstandseingabe_validieren
+    - US6_Zählerstand_zeitlich_zuordnen
     """
 
     def __init__(self, zaehlerstand_text_pfad, zaehlernummer, dezimalstellen, gesamtlänge):
@@ -25,6 +28,7 @@ class BasisZaehler:
         - US1_Strom_erfassen
         - US2_Gas_erfassen
         - US5_Zählerstandseingabe_validieren
+        - US6_Zählerstand_zeitlich_zuordnen
         """
         if isinstance(stand, int):
             stand = float(stand)
@@ -38,6 +42,7 @@ class BasisZaehler:
         stand = round(stand, self.dezimalstellen)
         self.validiere_zaehlerstand(stand)
         self.stand = stand
+        print("erfasse zaehlerstand")
         self.speichere_zaehlerstand()
 
     def validiere_zaehlerstand(self, stand):
@@ -69,9 +74,11 @@ class BasisZaehler:
         - US2_Gas_erfassen
         - US3_Stromzählernummer
         - US4_Gaszählernummer
+        - US6_Zählerstand_zeitlich_zuordnen
         """
+        zeitstempel = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open(self.zaehlerstand_text_pfad, "a") as file:
-            file.write(f"{self.zaehlernummer}: {self.stand:.{self.dezimalstellen}f}\n")
+            file.write(f"{zeitstempel} | {self.zaehlernummer} | {self.stand:.{self.dezimalstellen}f}\n")
 
 class Stromzaehler(BasisZaehler):
     """
@@ -81,6 +88,7 @@ class Stromzaehler(BasisZaehler):
     - US1_Strom_erfassen
     - US3_Stromzählernummer
     - US5_Zählerstandseingabe_validieren
+    - US6_Zählerstand_zeitlich_zuordnen
     """
     def __init__(self, zaehlerstand_text_pfad="data/stromzaehler.txt", zaehlernummer="D3-XX XXXXX"):
         super().__init__(zaehlerstand_text_pfad, zaehlernummer, dezimalstellen=1, gesamtlänge=7)
@@ -93,6 +101,7 @@ class Gaszaehler(BasisZaehler):
     - US2_Gas_erfassen
     - US4_Gaszählernummer
     - US5_Zählerstandseingabe_validieren
+    - US6_Zählerstand_zeitlich_zuordnen
     """
     def __init__(self, zaehlerstand_text_pfad="data/gaszaehler.txt", zaehlernummer="X XXXXX XXXX XXXX"):
         super().__init__(zaehlerstand_text_pfad, zaehlernummer, dezimalstellen=3, gesamtlänge=8)
@@ -101,14 +110,18 @@ if __name__ == "__main__":
     strom_zaehler = Stromzaehler()
     gas_zaehler = Gaszaehler()
 
-    try:
-        strom_zaehler.erfasse_zaehlerstand(float(input("Strom-Zählerstand eingeben: ")))
-        print(f"Strom-Zählerstand erfolgreich erfasst: {strom_zaehler.stand}")
-    except ValueError as e:
-        print(f"Fehler: {e}")
+    while True:
+        try:
+            strom_zaehler.erfasse_zaehlerstand(float(input("Strom-Zählerstand eingeben: ")))
+            print(f"Strom-Zählerstand erfolgreich erfasst: {strom_zaehler.stand}")
+            break
+        except ValueError as e:
+            print(f"Fehler: {e}. Bitte erneut eingeben.")
 
-    try:
-        gas_zaehler.erfasse_zaehlerstand(float(input("Gas-Zählerstand eingeben: ")))
-        print(f"Gas-Zählerstand erfolgreich erfasst: {gas_zaehler.stand}")
-    except ValueError as e:
-        print(f"Fehler: {e}")
+    while True:
+        try:
+            gas_zaehler.erfasse_zaehlerstand(float(input("Gas-Zählerstand eingeben: ")))
+            print(f"Gas-Zählerstand erfolgreich erfasst: {gas_zaehler.stand}")
+            break
+        except ValueError as e:
+            print(f"Fehler: {e}. Bitte erneut eingeben.")
