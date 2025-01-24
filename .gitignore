@@ -174,3 +174,4 @@ cython_debug/
 *.txt
 .testmondata
 .vscode
+.DS_Store
