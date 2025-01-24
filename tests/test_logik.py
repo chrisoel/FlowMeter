@@ -20,6 +20,24 @@ def test_zaehlerstand_erfassen(clean_test_datei):
     gas.erfasse_zaehlerstand(12345.678)
     assert gas.stand == 12345.678
 
+def test_zaehlerstand_erfassen_zu_kurz(clean_test_datei):
+    strom = Stromzaehler(clean_test_datei)
+    with pytest.raises(ValueError, match="Der Zählerstand muss insgesamt 7 Stellen haben."):
+        strom.erfasse_zaehlerstand(12345.7)
+
+    gas = Gaszaehler(clean_test_datei)
+    with pytest.raises(ValueError, match="Der Zählerstand muss insgesamt 8 Stellen haben."):
+        gas.erfasse_zaehlerstand(1234.678)
+
+def test_zaehlerstand_erfassen_zu_lang(clean_test_datei):
+    strom = Stromzaehler(clean_test_datei)
+    with pytest.raises(ValueError, match="Der Zählerstand muss insgesamt 7 Stellen haben."):
+        strom.erfasse_zaehlerstand(1234567.8)
+
+    gas = Gaszaehler(clean_test_datei)
+    with pytest.raises(ValueError, match="Der Zählerstand muss insgesamt 8 Stellen haben."):
+        gas.erfasse_zaehlerstand(123456.789)
+
 def test_zaehlerstand_ist_float(clean_test_datei):
     strom = Stromzaehler(clean_test_datei)
     strom.erfasse_zaehlerstand(123456.7)
