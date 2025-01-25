@@ -51,12 +51,12 @@ class BaseMeter:
         except Exception as e:
             raise
 
-    def get_all_readings(self):
+    def get_all_records(self):
         try:
             if isinstance(self, ElectricityMeter):
-                return self.database.get_all_electricity_meter_entries()
+                return self.database.get_all_electricity_meters()
             elif isinstance(self, GasMeter):
-                return self.database.get_all_gas_meter_entries()
+                return self.database.get_all_gas_meters()
         except Exception:
             raise
 

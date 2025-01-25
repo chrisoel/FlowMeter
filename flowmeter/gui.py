@@ -4,8 +4,34 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'
 
 from flowmeter.logic import ElectricityMeter, GasMeter
 import tkinter as tk
+from tkinter import ttk
 from tkinter import messagebox
 
+class DataDisplayGUI:
+    def __init__(self, root, title, data):
+        self.root = root
+        self.root.title(title)
+        self.root.geometry("700x300")  # Höhe angepasst
+        self.root.configure(bg="black")
+        self.data = data
+        self.create_table()
+
+    def create_table(self):
+        tk.Label(self.root, text="Datenanzeige", font=("Arial", 18), fg="white", bg="black").pack(pady=10)
+        table_frame = tk.Frame(self.root, bg="black")
+        table_frame.pack(fill=tk.BOTH, expand=True)
+        columns = ("ID", "Datum", "Wert")
+        tree = ttk.Treeview(table_frame, columns=columns, show="headings", height=5)
+        tree.heading("ID", text="ID")
+        tree.heading("Datum", text="Datum")
+        tree.heading("Wert", text="Wert")
+        tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar = ttk.Scrollbar(table_frame, orient=tk.VERTICAL, command=tree.yview)
+        tree.configure(yscrollcommand=scrollbar.set)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        for record in self.data:
+            tree.insert("", tk.END, values=record)
 
 class RotatingCounter:
     def __init__(self, root, x, y, initial_value=0, highlight=False):
@@ -59,11 +85,23 @@ class FlowMeterGUI:
         )
         gas_button.pack(pady=5)
 
+        show_gas_button = tk.Button(
+            self.root, text="Gasdaten anzeigen", font=("Arial", 12), width=25,
+            command=self.show_gas_data
+        )
+        show_gas_button.pack(pady=5)        
+
         electricity_button = tk.Button(
             self.root, text="Strom-Zählerstand eingeben", font=("Arial", 12), width=25,
             command=self.open_electricity_meter_gui
         )
         electricity_button.pack(pady=5)
+
+        show_electricity_button = tk.Button(
+            self.root, text="Stromdaten anzeigen", font=("Arial", 12), width=25,
+            command=self.show_electricity_data
+        )
+        show_electricity_button.pack(pady=5)
 
         reset_button = tk.Button(
             self.root, text="Alles zurücksetzen", font=("Arial", 12), width=25,
@@ -103,6 +141,32 @@ class FlowMeterGUI:
             electricity_meter.reset_all_data()
             tk.messagebox.showinfo("Erledigt!", "Alle Daten wurden erfolgreich zurückgesetzt!")
 
+    def show_gas_data(self):
+        try:
+            gas_meter = GasMeter()
+            records = gas_meter.get_all_records()
+            if not records:
+                tk.messagebox.showinfo("Gasdaten", "Keine Daten verfügbar.")
+                return
+            self.open_data_display_window("Gasdaten anzeigen", records)
+        except Exception as e:
+            tk.messagebox.showerror("Fehler", f"Fehler beim Abrufen der Gasdaten: {str(e)}")
+
+    def show_electricity_data(self):
+        try:
+            electricity_meter = ElectricityMeter()
+            records = electricity_meter.get_all_records()
+            if not records:
+                tk.messagebox.showinfo("Stromdaten", "Keine Daten verfügbar.")
+                return
+            self.open_data_display_window("Stromdaten anzeigen", records)
+        except Exception as e:
+            tk.messagebox.showerror("Fehler", f"Fehler beim Abrufen der Stromdaten: {str(e)}")
+
+    def open_data_display_window(self, title, data):
+        self.close_current_window()
+        self.current_window = tk.Toplevel(self.root)
+        DataDisplayGUI(self.current_window, title, data)
 
 class GasMeterGUI:
     def __init__(self, root):
