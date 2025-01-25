@@ -113,3 +113,13 @@ class Database:
     def delete_all_data(self):
         sql = self.schema["database"]["sql"]["delete_all_data"]
         self._execute_sql(sql, executescript=True)
+
+    def delete_entry(self, meter_type, record_id):
+        sql = self.schema["database"]["sql"][f"delete_{meter_type}_meter_entry"]
+        self._execute_sql(sql, (record_id,))
+
+    def delete_electricity_meter(self, record_id):
+        self.delete_entry("electricity", record_id)
+
+    def delete_gas_meter(self, record_id):
+        self.delete_entry("gas", record_id)

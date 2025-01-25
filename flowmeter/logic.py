@@ -66,6 +66,17 @@ class BaseMeter:
         except Exception:
             raise
 
+    def delete_record(self, record_id):
+        try:
+            if isinstance(self, ElectricityMeter):
+                self.database.delete_electricity_meter(record_id)
+            elif isinstance(self, GasMeter):
+                self.database.delete_gas_meter(record_id)
+            else:
+                raise ValueError("Unbekannter Zählertyp.")
+        except Exception as e:
+            raise ValueError(f"Fehler beim Löschen des Eintrags mit ID {record_id}: {str(e)}")
+
 class ElectricityMeter(BaseMeter):
     def __init__(self, database=None):
         if database is None:

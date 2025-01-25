@@ -83,3 +83,11 @@ database:
     delete_all_data: |
       DELETE FROM ElectricityMeter;
       DELETE FROM GasMeter;
+
+    delete_electricity_meter_entry: |
+      DELETE FROM ElectricityMeter
+      WHERE electricityMeterID = ?;
+
+    delete_gas_meter_entry: |
+      DELETE FROM GasMeter
+      WHERE gasMeterID = ?;

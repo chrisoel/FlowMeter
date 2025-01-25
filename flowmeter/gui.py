@@ -8,12 +8,13 @@ from tkinter import ttk
 from tkinter import messagebox
 
 class DataDisplayGUI:
-    def __init__(self, root, title, data):
+    def __init__(self, root, title, data, delete_callback=None):
         self.root = root
         self.root.title(title)
-        self.root.geometry("700x300")  # Höhe angepasst
+        self.root.geometry("700x400")
         self.root.configure(bg="black")
         self.data = data
+        self.delete_callback = delete_callback
         self.create_table()
 
     def create_table(self):
@@ -21,17 +22,51 @@ class DataDisplayGUI:
         table_frame = tk.Frame(self.root, bg="black")
         table_frame.pack(fill=tk.BOTH, expand=True)
         columns = ("ID", "Datum", "Wert")
-        tree = ttk.Treeview(table_frame, columns=columns, show="headings", height=5)
-        tree.heading("ID", text="ID")
-        tree.heading("Datum", text="Datum")
-        tree.heading("Wert", text="Wert")
-        tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scrollbar = ttk.Scrollbar(table_frame, orient=tk.VERTICAL, command=tree.yview)
-        tree.configure(yscrollcommand=scrollbar.set)
+        self.tree = ttk.Treeview(table_frame, columns=columns, show="headings", height=10)
+        self.tree.heading("ID", text="ID")
+        self.tree.heading("Datum", text="Datum")
+        self.tree.heading("Wert", text="Wert")
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar = ttk.Scrollbar(table_frame, orient=tk.VERTICAL, command=self.tree.yview)
+        self.tree.configure(yscrollcommand=scrollbar.set)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
         for record in self.data:
-            tree.insert("", tk.END, values=record)
+            self.tree.insert("", tk.END, values=record)
+
+        button_frame = tk.Frame(self.root, bg="black")
+        button_frame.pack(fill=tk.X, pady=10)
+        delete_button = tk.Button(
+            button_frame,
+            text="Ausgewählten Eintrag löschen",
+            font=("Arial", 12),
+            command=self.delete_selected_entry
+        )
+        delete_button.pack(side=tk.LEFT, padx=5)
+
+        close_button = tk.Button(
+            button_frame,
+            text="Schließen",
+            font=("Arial", 12),
+            command=self.root.destroy
+        )
+        close_button.pack(side=tk.LEFT, padx=5)
+
+    def delete_selected_entry(self):
+        selected_item = self.tree.selection()
+        if not selected_item:
+            tk.messagebox.showwarning("Warnung", "Bitte wählen Sie einen Eintrag aus, um ihn zu löschen.")
+            return
+
+        confirm = tk.messagebox.askyesno("Bestätigung", "Möchten Sie diesen Eintrag wirklich löschen?")
+        if confirm:
+            for item in selected_item:
+                record = self.tree.item(item, "values")
+                record_id = record[0]
+                self.tree.delete(item)
+
+                if self.delete_callback:
+                    self.delete_callback(record_id)
 
 class RotatingCounter:
     def __init__(self, root, x, y, initial_value=0, highlight=False):
@@ -148,7 +183,7 @@ class FlowMeterGUI:
             if not records:
                 tk.messagebox.showinfo("Gasdaten", "Keine Daten verfügbar.")
                 return
-            self.open_data_display_window("Gasdaten anzeigen", records)
+            self.open_data_display_window("Gasdaten anzeigen", records, self.delete_gas_entry)
         except Exception as e:
             tk.messagebox.showerror("Fehler", f"Fehler beim Abrufen der Gasdaten: {str(e)}")
 
@@ -159,14 +194,30 @@ class FlowMeterGUI:
             if not records:
                 tk.messagebox.showinfo("Stromdaten", "Keine Daten verfügbar.")
                 return
-            self.open_data_display_window("Stromdaten anzeigen", records)
+            self.open_data_display_window("Stromdaten anzeigen", records, self.delete_electricity_entry)
         except Exception as e:
             tk.messagebox.showerror("Fehler", f"Fehler beim Abrufen der Stromdaten: {str(e)}")
 
-    def open_data_display_window(self, title, data):
+    def open_data_display_window(self, title, data, delete_callback):
         self.close_current_window()
         self.current_window = tk.Toplevel(self.root)
-        DataDisplayGUI(self.current_window, title, data)
+        DataDisplayGUI(self.current_window, title, data, delete_callback)
+
+    def delete_gas_entry(self, record_id):
+        try:
+            gas_meter = GasMeter()
+            gas_meter.delete_record(record_id)
+            tk.messagebox.showinfo("Erfolg", f"Eintrag mit ID {record_id} wurde gelöscht.")
+        except Exception as e:
+            tk.messagebox.showerror("Fehler", f"Fehler beim Löschen des Eintrags: {str(e)}")
+
+    def delete_electricity_entry(self, record_id):
+        try:
+            electricity_meter = ElectricityMeter()
+            electricity_meter.delete_record(record_id)
+            tk.messagebox.showinfo("Erfolg", f"Eintrag mit ID {record_id} wurde gelöscht.")
+        except Exception as e:
+            tk.messagebox.showerror("Fehler", f"Fehler beim Löschen des Eintrags: {str(e)}")
 
 class GasMeterGUI:
     def __init__(self, root):
