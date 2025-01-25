@@ -2,8 +2,9 @@ import sqlite3
 import os
 import yaml
 import logging
+from datetime import datetime
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class Datenbank:
     def __init__(self, db_name="flowmeter/zaehler.db", schema_file="flowmeter/database.yaml"):
@@ -90,30 +91,66 @@ class Datenbank:
             self._create_database()
 
     def insert_stromzaehler(self, stromZaehlerNR, zeitpunkt, stromZaehlerStand):
-        if stromZaehlerStand < 0:
-            raise ValueError("Der Zählerstand darf nicht negativ sein.")
-        logging.info(f"Füge Stromzähler-Daten ein: NR={stromZaehlerNR}, Zeitpunkt={zeitpunkt}, Stand={stromZaehlerStand}.")
-        with self._connect() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """INSERT INTO StromZaehler (stromZaehlerNR, zeitpunkt, stromZaehlerStand)
-                VALUES (?, ?, ?);""",
-                (stromZaehlerNR, zeitpunkt, stromZaehlerStand),
-            )
-            conn.commit()
+        try:
+            if not isinstance(stromZaehlerStand, float):
+                raise ValueError("Ungültiger Zählerstand. Der Wert muss ein Float sein.")
+
+            stromzaehler_str = str(stromZaehlerStand)
+            if '.' not in stromzaehler_str or len(stromzaehler_str.split('.')[1]) != 1:
+                raise ValueError("Der Stromzählerstand muss genau 1 Nachkommastelle haben.")
+
+            if len(stromzaehler_str.replace('.', '')) != 7:
+                raise ValueError("Der Stromzählerstand muss genau 7 Ziffern (inkl. 1 Nachkommastelle) haben.")
+            
+            if stromZaehlerStand < 0:
+                raise ValueError("Der Zählerstand darf nicht negativ sein.")
+
+            logging.info(f"Füge Stromzähler-Daten ein: NR={stromZaehlerNR}, Zeitpunkt={zeitpunkt}, Stand={stromZaehlerStand}.")
+            with self._connect() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    """INSERT INTO StromZaehler (stromZaehlerNR, zeitpunkt, stromZaehlerStand)
+                    VALUES (?, ?, ?);""",
+                    (stromZaehlerNR, zeitpunkt, stromZaehlerStand),
+                )
+                conn.commit()
+        except sqlite3.IntegrityError as e:
+            logging.error(f"Fehler beim Einfügen in die Datenbank: {e}")
+            if "RAISE(ABORT" in str(e):
+                raise ValueError(f"Ungültige Eingabe für Stromzählerstand: {e}")
+            else:
+                raise
 
     def insert_gaszaehler(self, gasZaehlerNR, zeitpunkt, gasZaehlerStand):
-        if gasZaehlerStand < 0:
-            raise ValueError("Der Zählerstand darf nicht negativ sein.")
-        logging.info(f"Füge Gaszähler-Daten ein: NR={gasZaehlerNR}, Zeitpunkt={zeitpunkt}, Stand={gasZaehlerStand}.")
-        with self._connect() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """INSERT INTO Gaszaehler (gasZaehlerNR, zeitpunkt, gasZaehlerStand)
-                VALUES (?, ?, ?);""",
-                (gasZaehlerNR, zeitpunkt, gasZaehlerStand),
-            )
-            conn.commit()
+        try:
+            if not isinstance(gasZaehlerStand, float):
+                raise ValueError("Ungültiger Zählerstand. Der Wert muss ein Float sein.")
+
+            gaszaehler_str = str(gasZaehlerStand)
+            if '.' not in gaszaehler_str or len(gaszaehler_str.split('.')[1]) != 3:
+                raise ValueError("Der Gaszählerstand muss genau 3 Nachkommastellen haben.")
+
+            if len(gaszaehler_str.replace('.', '')) != 8:
+                raise ValueError("Der Gaszählerstand muss genau 8 Ziffern (inkl. 3 Nachkommastellen) haben.")
+            
+            if gasZaehlerStand < 0:
+                raise ValueError("Der Zählerstand darf nicht negativ sein.")
+
+            logging.info(f"Füge Gaszähler-Daten ein: NR={gasZaehlerNR}, Zeitpunkt={zeitpunkt}, Stand={gasZaehlerStand}.")
+            with self._connect() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    """INSERT INTO Gaszaehler (gasZaehlerNR, zeitpunkt, gasZaehlerStand)
+                    VALUES (?, ?, ?);""",
+                    (gasZaehlerNR, zeitpunkt, gasZaehlerStand),
+                )
+                conn.commit()
+        except sqlite3.IntegrityError as e:
+            logging.error(f"Fehler beim Einfügen in die Datenbank: {e}")
+            if "RAISE(ABORT" in str(e):
+                raise ValueError(f"Ungültige Eingabe für Gaszählerstand: {e}")
+            else:
+                raise
 
     def get_stromzaehler_id_last_view(self):
         logging.info("Abfrage: Stromzähler letzter Stand je Zähler.")
@@ -158,5 +195,35 @@ class Datenbank:
             return cursor.fetchall()
 
 if __name__ == "__main__":
+    # Exploratives Testen
     db = Datenbank()
     db.initialize()
+
+    while True:
+        try:
+            zaehlernummer_strom = "D3-XX XXXXX"
+            zeitpunkt_strom = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            stromzaehlerstand = float(input("Strom-Zählerstand eingeben: "))
+            
+            if stromzaehlerstand < 0:
+                raise ValueError("Der Zählerstand darf nicht negativ sein.")
+            
+            db.insert_stromzaehler(zaehlernummer_strom, zeitpunkt_strom, stromzaehlerstand)
+            logging.info(f"Strom-Zählerstand erfolgreich in die Datenbank geschrieben: {stromzaehlerstand}")
+
+            zaehlernummer_gas = "X XXXXX XXXX XXXX"
+            zeitpunkt_gas = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            gaszaehlerstand = float(input("Gas-Zählerstand eingeben: "))
+
+            if gaszaehlerstand < 0:
+                raise ValueError("Der Zählerstand darf nicht negativ sein.")
+
+            db.insert_gaszaehler(zaehlernummer_gas, zeitpunkt_gas, gaszaehlerstand)
+            logging.info(f"Gas-Zählerstand erfolgreich in die Datenbank geschrieben: {gaszaehlerstand}")
+
+        except ValueError as e:
+            logging.warning(f"Ungültige Eingabe: {e}. Bitte erneut versuchen.")
+        
+        except KeyboardInterrupt:
+            logging.info("Datenaufnahme abgebrochen. Programm wird beendet.")
+            break

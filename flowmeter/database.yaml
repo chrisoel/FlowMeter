@@ -25,9 +25,9 @@ database:
                   SELECT 1
                   FROM StromZaehler
                   WHERE stromZaehlerNR = NEW.stromZaehlerNR
-                    AND ABS(STRFTIME('%s', zeitpunkt) - STRFTIME('%s', NEW.zeitpunkt)) < 5
+                    AND ABS(STRFTIME('%s', zeitpunkt) - STRFTIME('%s', NEW.zeitpunkt)) < 1
               )
-              THEN RAISE(ABORT, 'Ein neuer Wert darf nicht innerhalb von 5 Sekunden hinterlegt werden')
+              THEN RAISE(ABORT, 'Ein neuer Wert darf nicht innerhalb von 1 Sekunde hinterlegt werden')
             END;
 
     - name: Gaszaehler
@@ -55,9 +55,9 @@ database:
                   SELECT 1
                   FROM Gaszaehler
                   WHERE gasZaehlerNR = NEW.gasZaehlerNR
-                    AND ABS(STRFTIME('%s', zeitpunkt) - STRFTIME('%s', NEW.zeitpunkt)) < 5
+                    AND ABS(STRFTIME('%s', zeitpunkt) - STRFTIME('%s', NEW.zeitpunkt)) < 1
               )
-              THEN RAISE(ABORT, 'Ein neuer Wert darf nicht innerhalb von 5 Sekunden hinterlegt werden')
+              THEN RAISE(ABORT, 'Ein neuer Wert darf nicht innerhalb von 1 Sekunde hinterlegt werden')
             END;
 
   views:
