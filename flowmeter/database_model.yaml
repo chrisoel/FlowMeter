@@ -1,0 +1,85 @@
+database:
+  tables:
+    - name: ElectricityMeter
+      columns:
+        - name: electricityMeterID
+          type: INTEGER
+          constraints: [PRIMARY KEY, AUTOINCREMENT]
+        - name: timestamp
+          type: DATETIME
+          constraints: [NOT NULL DEFAULT CURRENT_TIMESTAMP]
+        - name: electricityMeterReading
+          type: DECIMAL(7, 1)
+          constraints: [NOT NULL]
+
+    - name: GasMeter
+      columns:
+        - name: gasMeterID
+          type: INTEGER
+          constraints: [PRIMARY KEY, AUTOINCREMENT]
+        - name: timestamp
+          type: DATETIME
+          constraints: [NOT NULL DEFAULT CURRENT_TIMESTAMP]
+        - name: gasMeterReading
+          type: DECIMAL(8, 3)
+          constraints: [NOT NULL]
+
+  views:
+    - name: electricity_meter_last_entry
+      definition: |
+        SELECT electricityMeterID, timestamp, electricityMeterReading
+        FROM ElectricityMeter
+        WHERE electricityMeterID = (
+          SELECT MAX(electricityMeterID)
+          FROM ElectricityMeter
+        );
+
+    - name: electricity_meter_all_entries
+      definition: |
+        SELECT electricityMeterID, timestamp, electricityMeterReading
+        FROM ElectricityMeter
+        ORDER BY timestamp DESC;
+
+    - name: gas_meter_last_entry
+      definition: |
+        SELECT gasMeterID, timestamp, gasMeterReading
+        FROM GasMeter
+        WHERE gasMeterID = (
+          SELECT MAX(gasMeterID)
+          FROM GasMeter
+        );
+
+    - name: gas_meter_all_entries
+      definition: |
+        SELECT gasMeterID, timestamp, gasMeterReading
+        FROM GasMeter
+        ORDER BY timestamp DESC;
+
+  sql:
+    insert_electricity_meter: |
+      INSERT INTO ElectricityMeter (electricityMeterReading)
+      VALUES (?);
+
+    insert_gas_meter: |
+      INSERT INTO GasMeter (gasMeterReading)
+      VALUES (?);
+
+    query_electricity_meter_last_entry: |
+      SELECT electricityMeterID, timestamp, electricityMeterReading
+      FROM electricity_meter_last_entry;
+
+    query_electricity_meter_all_entries: |
+      SELECT electricityMeterID, timestamp, electricityMeterReading
+      FROM electricity_meter_all_entries;
+
+    query_gas_meter_last_entry: |
+      SELECT gasMeterID, timestamp, gasMeterReading
+      FROM gas_meter_last_entry;
+
+    query_gas_meter_all_entries: |
+      SELECT gasMeterID, timestamp, gasMeterReading
+      FROM gas_meter_all_entries;
+
+    delete_all_data: |
+      DELETE FROM ElectricityMeter;
+      DELETE FROM GasMeter;
