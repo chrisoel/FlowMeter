@@ -1,7 +1,7 @@
-import sys
-import os
+import os, sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
+from flowmeter.logic import EnergyProvider
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import seaborn as sns
@@ -18,9 +18,36 @@ class DataDisplayGUI:
         self.data = data
         self.delete_callback = delete_callback
         self.plot_window = None
+
+        # Instanz von EnergyProvider erstellen
+        self.provider = EnergyProvider()
+
+        # Lade Energieziele aus der Datenbank
+        self.energy_targets = self.load_energy_targets()
+
         self.create_table()
         self.show_plot_window()
         self.bind_window_events()
+
+    def load_energy_targets(self):
+        """
+        Lädt die Energieziele (monatliche Werte) für Strom und Gas aus der Datenbank.
+        """
+        try:
+            electricity_provider = self.provider.get_provider("electricity")
+            gas_provider = self.provider.get_provider("gas")
+
+            electricity_target = (
+                electricity_provider[2] / 12 if electricity_provider else None
+            )  # Jährliche Energie durch 12 teilen
+            gas_target = (
+                gas_provider[2] / 12 if gas_provider else None
+            )  # Jährliche Energie durch 12 teilen
+
+            return {"electricity": electricity_target, "gas": gas_target}
+        except Exception as e:
+            print(f"Fehler beim Laden der Energieziele: {str(e)}")
+            return {"electricity": None, "gas": None}
 
     def create_table(self):
         tk.Label(self.root, text="Datenanzeige", font=("Arial", 18), fg="white", bg="black").pack(pady=10)
@@ -65,13 +92,20 @@ class DataDisplayGUI:
         sns.set_theme(style="darkgrid")
         fig, ax = plt.subplots(figsize=(6, 4), dpi=100)
 
-        sns.lineplot(x=timestamps, y=values, ax=ax, marker="o", color="blue", linewidth=2.5)
+        sns.lineplot(x=timestamps, y=values, ax=ax, marker="o", color="blue", linewidth=2.5, label="Verbrauchsdaten")
+
+        # Ziel-Linien für Strom und Gas einfügen
+        if self.energy_targets["electricity"]:
+            ax.axhline(y=self.energy_targets["electricity"], color="green", linestyle="--", label="Ziel (Strom)")
+        if self.energy_targets["gas"]:
+            ax.axhline(y=self.energy_targets["gas"], color="red", linestyle="--", label="Ziel (Gas)")
 
         ax.set_title("Datenverlauf", fontsize=16, weight="bold", color="#333333")
         ax.set_xlabel("Zeit", fontsize=12, color="#555555")
         ax.set_ylabel("Wert", fontsize=12, color="#555555")
         ax.tick_params(axis="x", rotation=45, labelsize=10, colors="#333333")
         ax.tick_params(axis="y", labelsize=10, colors="#333333")
+        ax.legend(fontsize=10)
 
         canvas = FigureCanvasTkAgg(fig, master=self.plot_window)
         canvas_widget = canvas.get_tk_widget()

@@ -7,13 +7,14 @@ from tkinter import messagebox
 import tkinter as tk
 from flowmeter.gui.datadisplay import DataDisplayGUI
 from flowmeter.gui.rotatingcounter import RotatingCounter
+from flowmeter.gui.providersettings import ProviderSettingsGUI
 
 
 class FlowMeterGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("FlowMeter Menü")
-        self.root.geometry("400x300")
+        self.root.geometry("400x350")
         self.root.configure(bg="black")
         self.root.resizable(False, False)
         self.current_window = None
@@ -46,6 +47,12 @@ class FlowMeterGUI:
             command=self.show_electricity_data
         )
         show_electricity_button.pack(pady=5)
+
+        provider_button = tk.Button(
+            self.root, text="Energieversorger einstellen", font=("Arial", 12), width=25,
+            command=self.open_provider_settings_gui
+        )
+        provider_button.pack(pady=5)
 
         reset_button = tk.Button(
             self.root, text="Alles zurücksetzen", font=("Arial", 12), width=25,
@@ -127,6 +134,9 @@ class FlowMeterGUI:
             tk.messagebox.showinfo("Erfolg", f"Eintrag mit ID {record_id} wurde gelöscht.")
         except Exception as e:
             tk.messagebox.showerror("Fehler", f"Fehler beim Löschen des Eintrags: {str(e)}")
+
+    def open_provider_settings_gui(self):
+        self.open_sub_window("Energieversorger einstellen", ProviderSettingsGUI)
 
 class GasMeterGUI:
     def __init__(self, root):

@@ -90,3 +90,40 @@ class GasMeter(BaseMeter):
             database = Database()
             database.initialize()
         super().__init__(database=database)
+
+class EnergyProvider:
+    def __init__(self, database=None):
+        if database is None:
+            database = Database()
+            database.initialize()
+        self.database = database
+
+    def add_provider(self, energy_type, annual_energy, start_date):
+        try:
+            self.database.insert_energy_provider(energy_type, annual_energy, start_date)
+        except Exception as e:
+            raise ValueError(f"Fehler beim Hinzufügen/Aktualisieren des Energieanbieters: {str(e)}")
+
+    def update_provider(self, energy_type, annual_energy, start_date):
+        try:
+            self.database.update_energy_provider(energy_type, annual_energy, start_date)
+        except Exception as e:
+            raise ValueError(f"Fehler beim Aktualisieren des Energieanbieters: {str(e)}")
+
+    def delete_provider(self, energy_type):
+        try:
+            self.database.delete_energy_provider(energy_type)
+        except Exception as e:
+            raise ValueError(f"Fehler beim Löschen des Energieanbieters: {str(e)}")
+
+    def get_provider(self, energy_type):
+        try:
+            return self.database.get_energy_provider(energy_type)
+        except Exception as e:
+            raise ValueError(f"Fehler beim Abrufen des Energieanbieters: {str(e)}")
+
+    def get_all_providers(self):
+        try:
+            return self.database.get_all_energy_providers()
+        except Exception as e:
+            raise ValueError(f"Fehler beim Abrufen aller Energieanbieter: {str(e)}")

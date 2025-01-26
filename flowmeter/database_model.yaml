@@ -1,5 +1,20 @@
 database:
   tables:
+    - name: EnergyData
+      columns:
+        - name: id
+          type: INTEGER
+          constraints: [PRIMARY KEY, AUTOINCREMENT]
+        - name: energy_type
+          type: VARCHAR(50)
+          constraints: [NOT NULL, UNIQUE]
+        - name: annual_energy
+          type: INTEGER
+          constraints: [NOT NULL]
+        - name: start_date
+          type: DATE
+          constraints: [NOT NULL]
+
     - name: ElectricityMeter
       columns:
         - name: electricityMeterID
@@ -55,7 +70,23 @@ database:
         FROM GasMeter
         ORDER BY timestamp DESC;
 
+    - name: energy_data_all_entries
+      definition: |
+        SELECT *
+        FROM EnergyData
+        ORDER BY id ASC;
+
   sql:
+    insert_energy_data: |
+      INSERT INTO EnergyData (energy_type, annual_energy, start_date)
+      VALUES (?, ?, ?);
+
+    update_energy_data: |
+      UPDATE EnergyData
+      SET annual_energy = ?, 
+          start_date = ?
+      WHERE energy_type = ?;
+
     insert_electricity_meter: |
       INSERT INTO ElectricityMeter (electricityMeterReading)
       VALUES (?);
@@ -63,6 +94,10 @@ database:
     insert_gas_meter: |
       INSERT INTO GasMeter (gasMeterReading)
       VALUES (?);
+
+    query_energy_data: |
+      SELECT id, energy_type, annual_energy, start_date
+      FROM EnergyData;
 
     query_electricity_meter_last_entry: |
       SELECT electricityMeterID, timestamp, electricityMeterReading
@@ -83,6 +118,7 @@ database:
     delete_all_data: |
       DELETE FROM ElectricityMeter;
       DELETE FROM GasMeter;
+      DELETE FROM EnergyData;
 
     delete_electricity_meter_entry: |
       DELETE FROM ElectricityMeter
@@ -91,3 +127,7 @@ database:
     delete_gas_meter_entry: |
       DELETE FROM GasMeter
       WHERE gasMeterID = ?;
+
+    delete_energy_data_entry: |
+      DELETE FROM EnergyData
+      WHERE energy_type = ?;

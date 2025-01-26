@@ -1,0 +1,6 @@
+electricity:
+  annual_energy: 2000
+  start_date: '2025-01-01'
+gas:
+  annual_energy: 2000
+  start_date: '2025-01-01'

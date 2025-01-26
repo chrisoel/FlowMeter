@@ -79,6 +79,33 @@ class Database:
                 return False
         return True
 
+
+    def insert_energy_provider(self, energy_type, annual_energy, start_date):
+        sql_insert = self.schema["database"]["sql"]["insert_energy_data"]
+        sql_update = self.schema["database"]["sql"]["update_energy_data"]
+
+        existing_entry = self.get_energy_provider(energy_type)
+        if existing_entry:
+            self._execute_sql(sql_update, (annual_energy, start_date, energy_type))
+        else:
+            self._execute_sql(sql_insert, (energy_type, annual_energy, start_date))
+
+    def update_energy_provider(self, energy_type, annual_energy, start_date):
+        sql = self.schema["database"]["sql"]["update_energy_data"]
+        self._execute_sql(sql, (annual_energy, start_date, energy_type))
+
+    def delete_energy_provider(self, energy_type):
+        sql = self.schema["database"]["sql"]["delete_energy_data_entry"]
+        self._execute_sql(sql, (energy_type,))
+
+    def get_energy_provider(self, energy_type):
+        sql = f"SELECT * FROM energy_data_all_entries WHERE energy_type = ?;"
+        return self._execute_sql(sql, (energy_type,), fetchone=True)
+
+    def get_all_energy_providers(self):
+        sql = self.schema["database"]["sql"]["query_energy_data"]
+        return self._execute_sql(sql, fetchall=True)
+
     def insert_meter_reading(self, meter_type, meter_reading, pattern):
         self._validate_input(meter_reading, pattern, f"{meter_type}-Zählerstand")
         sql = self.schema["database"]["sql"][f"insert_{meter_type}_meter"]

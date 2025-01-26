@@ -89,3 +89,32 @@ def test_gas_meter_pattern_validation(test_database):
         db.insert_gas_meter("12345.678") 
     with pytest.raises(ValueError):
         db.insert_gas_meter(12345678)
+
+def test_insert_energy_provider(test_database):
+    db = test_database
+    db.insert_energy_provider('electricity', 2000, '2025-01-01')
+    result = db.get_energy_provider('electricity')
+    assert result[1] == 'electricity', "Der Energie-Typ sollte 'electricity' sein."
+    assert result[2] == 2000, "Der jährliche Energieverbrauch sollte 2000 sein."
+
+def test_update_energy_provider(test_database):
+    db = test_database
+    db.insert_energy_provider('gas', 1500, '2025-01-01')
+    db.update_energy_provider('gas', 1800, '2025-06-01')
+    result = db.get_energy_provider('gas')
+    assert result[2] == 1800, "Der jährliche Energieverbrauch sollte auf 1800 aktualisiert sein."
+    assert result[3] == '2025-06-01', "Das Startdatum sollte auf '2025-06-01' aktualisiert sein."
+
+def test_delete_energy_provider(test_database):
+    db = test_database
+    db.insert_energy_provider('electricity', 2000, '2025-01-01')
+    db.delete_energy_provider('electricity')
+    result = db.get_energy_provider('electricity')
+    assert result is None, "Der Eintrag sollte gelöscht sein."
+
+def test_get_all_energy_providers(test_database):
+    db = test_database
+    db.insert_energy_provider('electricity', 2000, '2025-01-01')
+    db.insert_energy_provider('gas', 1500, '2025-01-01')
+    results = db.get_all_energy_providers()
+    assert len(results) == 2, "Es sollten genau zwei Energieversorger-Einträge vorhanden sein."
