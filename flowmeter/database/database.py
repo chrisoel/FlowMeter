@@ -6,7 +6,7 @@ import sqlite3
 import yaml
 
 class Database:
-    def __init__(self, database_name="flowmeter/meter_readings.db", schema_file="flowmeter/database_model.yaml"):
+    def __init__(self, database_name="flowmeter/database/meter_readings.db", schema_file="flowmeter/database/database_model.yaml"):
         self.database_name = database_name
         self.schema_file = schema_file
         self.connection = None

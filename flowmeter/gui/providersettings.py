@@ -5,7 +5,7 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
 from tkcalendar import Calendar
-from flowmeter.logic import EnergyProvider
+from flowmeter.logic.energyprovider import EnergyProvider
 import os
 
 

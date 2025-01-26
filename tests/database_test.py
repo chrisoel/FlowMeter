@@ -1,11 +1,11 @@
 import pytest
 import os
-from flowmeter.database import Database
+from flowmeter.database.database import Database
 
 @pytest.fixture
 def test_database():
     test_db = "tests/test_flowmeter.db"
-    schema_file = "flowmeter/database_model.yaml"
+    schema_file = "flowmeter/database/database_model.yaml"
     db = Database(database_name=test_db, schema_file=schema_file)
     db.initialize()
     yield db
